@@ -4,6 +4,10 @@ Single-phase sensitivity analysis and calibration workflow for SWAT+ models usin
 
 **Workflow:** GSA (LH-OAT Morris screening) &rarr; Calibration (Monte Carlo sampling) &rarr; narrowed parameter ranges &rarr; optional re-iteration.
 
+## Workflow
+
+![Workflow](workflow.svg)
+
 ---
 
 ## Requirements
