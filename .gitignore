@@ -1,0 +1,22 @@
+# ── R ────────────────────────────────────────────────────────────────────────
+.Rhistory
+.RData
+.Rproj.user/
+*.Rproj
+*.Rcheck/
+
+# ── SWAT+ model data (large / machine-specific) ──────────────────────────────
+TxtInOut/
+*/TxtInOut/
+obs_flow_*.csv
+
+# ── GSA / Calibration outputs (generated at runtime) ─────────────────────────
+GSA_v*/
+CAL_v*/
+*.rds
+
+# ── OS / editor ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/

@@ -1,0 +1,203 @@
+# ==============================================================================
+# config.yaml — SWAT+ Calibrator configuration
+# Single file for both GSA and calibration.
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Project
+# ------------------------------------------------------------------------------
+project_path: "C:/path/to/your/TxtInOut"       # Path to SWAT+ TxtInOut folder
+output_path: null                # Optional separate output folder.
+                                 # If null, outputs go inside project_path.
+threads: 16
+seed: 123
+
+# ------------------------------------------------------------------------------
+# Simulation period (shared by GSA and calibration)
+# ------------------------------------------------------------------------------
+simulation:
+  start_date:   "1979-01-01"
+  end_date:     "1980-12-31"
+  warmup_years: 1
+
+# ------------------------------------------------------------------------------
+# Temporal scale: "monthly" or "daily"
+# Controls which observed data file and metric suffix are used.
+# ------------------------------------------------------------------------------
+temporal_scale: "daily"
+
+# ------------------------------------------------------------------------------
+# GSA settings (LH-OAT Morris)
+# ------------------------------------------------------------------------------
+gsa:
+  m_traj: 2      # Number of LH-OAT trajectories (total runs = m_traj * (p+1))
+  delta:  0.20   # Perturbation step size [0,1]
+
+# ------------------------------------------------------------------------------
+# Calibration settings
+# ------------------------------------------------------------------------------
+calibration:
+  n_simulations:      30
+  threshold_nse:      0.50   # Minimum NSE (Moriasi et al. 2015 — satisfactory)
+  threshold_kge:      0.50   # Minimum KGE
+  threshold_abs_pbias: 15.0  # Maximum |PBIAS| (%)
+
+  # observed targets for water balance (diagnostic check after calibration)
+  targets:
+    et_rto:   0.48147          # ET / P ratio (target)
+    wyld_rto: 0.51853          # WYLD / P ratio (target)
+
+  # Automatic exclusion of insensitive parameters based on Morris mu_star.
+  # Parameters with mu_star <= threshold are fixed at their GSA median value.
+  auto_exclude: true              # Enable automatic exclusion
+  auto_exclude_threshold: 0       # mu_star threshold (0 = only completely insensitive)
+
+  # Manual list of parameters to ALSO exclude (additive with auto_exclude).
+  # Leave empty [] if auto_exclude is sufficient.
+  exclude_parameters: []
+  # Example: exclude_parameters: ["canmx", "epco", "cn3_swf"]
+
+# ------------------------------------------------------------------------------
+# Observed streamflow data
+# Files must be inside project_path, with columns: Date, Flow
+# Date format: YYYY-MM-DD
+# ------------------------------------------------------------------------------
+observed:
+  monthly_file: "obs_flow_mon.csv"
+  daily_file:   "obs_flow_daily.csv"
+  start_date:   "1980-01-01"    # Obs data start (skip warm-up years in obs record)
+
+# ------------------------------------------------------------------------------
+# Iteration control
+#
+# After the first run, CAL_v1/new_ranges.csv is produced.
+# To refine the calibration with narrowed ranges, set:
+#   enabled: true
+#   ranges_file: "C:/path/to/your/TxtInOut/CAL_v1/new_ranges.csv"
+# Then re-run main.R → creates GSA_v2/ and CAL_v2/
+# ------------------------------------------------------------------------------
+iteration:
+  enabled:     true
+  ranges_file: null
+
+# ------------------------------------------------------------------------------
+# SWAT+ outputs for GSA
+# The first key name (e.g., "streamflow") becomes sim$simulation$streamflow
+# and is used to build the observed-vs-simulated comparison.
+# ------------------------------------------------------------------------------
+gsa_outputs:
+  streamflow:
+    file:     "channel_sdmorph_day"
+    variable: "flo_out"
+    unit:     33              # Channel unit ID of the basin outlet
+
+# ------------------------------------------------------------------------------
+# SWAT+ outputs for calibration
+# Typically the same as gsa_outputs (or add a second scale for diagnostics).
+# ------------------------------------------------------------------------------
+cal_outputs:
+  streamflow:
+    file:     "channel_sdmorph_day"
+    variable: "flo_out"
+    unit:     33
+  # Water balance outputs (needed for balance diagnostic if targets are set)
+  precip:
+    file:     "basin_wb_aa"
+    variable: "precip"
+    unit:     1
+  et:
+    file:     "basin_wb_aa"
+    variable: "et"
+    unit:     1
+  wateryld:
+    file:     "basin_wb_aa"
+    variable: "wateryld"
+    unit:     1
+
+# ------------------------------------------------------------------------------
+# GSA metrics used for Elementary Effects computation
+# Must include "obj_total" (used for Morris ranking and range narrowing).
+# Use suffix matching temporal_scale: "_mon" for monthly, "_day" for daily.
+# ------------------------------------------------------------------------------
+gsa_metrics:
+  - "NSE_mon"
+  - "KGE_mon"
+  - "PBIAS_mon"
+  - "obj_total"
+
+# ------------------------------------------------------------------------------
+# Parameters
+# short    : short name used internally (must be unique)
+# par_name : SWATrunR notation  "variable::file | change = change_type"
+#            change types: pctchg (% change), absval (absolute value)
+# min/max  : parameter bounds (initial, used when iteration.enabled = false)
+# ------------------------------------------------------------------------------
+parameters:
+  - short: "cn2"
+    par_name: "cn2::cn2.hru | change = pctchg"
+    min: -25
+    max: 25
+  - short: "awc"
+    par_name: "awc::awc.sol | change = pctchg"
+    min: -25
+    max: 25
+  - short: "esco"
+    par_name: "esco::esco.hru | change = absval"
+    min: 0.01
+    max: 1.00
+  - short: "epco"
+    par_name: "epco::epco.hru | change = absval"
+    min: 0.01
+    max: 1.00
+  - short: "perco"
+    par_name: "perco::perco.hru | change = absval"
+    min: 0.01
+    max: 1.00
+  - short: "canmx"
+    par_name: "canmx::canmx.hru | change = absval"
+    min: 0.0
+    max: 10.0
+  - short: "latq_co"
+    par_name: "latq_co::latq_co.hru | change = absval"
+    min: 0.01
+    max: 1.00
+  - short: "petco"
+    par_name: "petco::petco.hru | change = absval"
+    min: 0.80
+    max: 1.20
+  - short: "revap_co"
+    par_name: "revap_co::revap_co.aqu | change = absval"
+    min: 0.00
+    max: 0.40
+  - short: "cn3_swf"
+    par_name: "cn3_swf::cn3_swf.hru | change = absval"
+    min: 0.00
+    max: 1.00
+  - short: "flo_min"
+    par_name: "flo_min::flo_min.aqu | change = absval"
+    min: 0.00
+    max: 3.00
+  - short: "bf_max"
+    par_name: "bf_max::bf_max.aqu | change = absval"
+    min: 0.10
+    max: 1.50
+  - short: "revap_min"
+    par_name: "revap_min::revap_min.aqu | change = absval"
+    min: 0.00
+    max: 2.00
+  - short: "surlag"
+    par_name: "surlag::surlag.bsn | change = absval"
+    min: 1
+    max: 24
+  - short: "lattime"
+    par_name: "lat_ttime::lat_ttime.hru | change = absval"
+    min: 0
+    max: 180
+  - short: "chn"
+    par_name: "chn::chn.rte | change = absval"
+    min: 0.02
+    max: 0.07
+  - short: "ovn"
+    par_name: "ovn::ovn.hru | change = pctchg"
+    min: -50
+    max: 50
