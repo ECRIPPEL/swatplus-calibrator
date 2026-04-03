@@ -78,11 +78,11 @@ if (isTRUE(cfg$iteration$enabled) && !is.null(cfg$iteration$ranges_file)) {
   prev_ranges <- read.csv(cfg$iteration$ranges_file, stringsAsFactors = FALSE)
 
   param_info <- yaml_params %>%
-    left_join(prev_ranges %>% select(parameter, new_min, new_max),
-              by = c("short" = "parameter")) %>%
+    inner_join(prev_ranges %>% select(parameter, new_min, new_max),
+               by = c("short" = "parameter")) %>%
     mutate(
-      min = ifelse(!is.na(new_min), new_min, min),
-      max = ifelse(!is.na(new_max), new_max, max)
+      min = new_min,
+      max = new_max
     ) %>%
     select(short, par_name, min, max)
 
