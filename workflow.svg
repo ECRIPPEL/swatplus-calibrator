@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 820" width="720" height="820">
+  <defs>
+    <marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="strokeWidth">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#444"/>
+    </marker>
+    <marker id="ah-or" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="strokeWidth">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#D35400"/>
+    </marker>
+    <filter id="sh" x="-2%" y="-1%" width="104%" height="103%">
+      <feDropShadow dx="0" dy="1" stdDeviation="2.5" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <style>
+    text { font-family: Arial, Helvetica, sans-serif; }
+  </style>
+
+  <!-- Background -->
+  <rect width="720" height="820" fill="#FFFFFF"/>
+
+  <!-- ======== INPUTS ======== -->
+  <rect x="45"  y="22" width="185" height="42" rx="6" fill="#F2F2F7" stroke="#A0A0B0" stroke-width="1.2"/>
+  <text x="137" y="48" text-anchor="middle" font-size="12" font-weight="600" fill="#333">config.yaml</text>
+
+  <rect x="267" y="22" width="185" height="42" rx="6" fill="#F2F2F7" stroke="#A0A0B0" stroke-width="1.2"/>
+  <text x="360" y="48" text-anchor="middle" font-size="12" font-weight="600" fill="#333">SWAT+ Project</text>
+
+  <rect x="490" y="22" width="185" height="42" rx="6" fill="#F2F2F7" stroke="#A0A0B0" stroke-width="1.2"/>
+  <text x="582" y="48" text-anchor="middle" font-size="12" font-weight="600" fill="#333">Observed Data</text>
+
+  <!-- Input arrows converge -->
+  <line x1="137" y1="64" x2="137" y2="80" stroke="#888" stroke-width="1.3"/>
+  <line x1="360" y1="64" x2="360" y2="80" stroke="#888" stroke-width="1.3"/>
+  <line x1="582" y1="64" x2="582" y2="80" stroke="#888" stroke-width="1.3"/>
+  <line x1="137" y1="80" x2="582" y2="80" stroke="#888" stroke-width="1.3"/>
+  <line x1="360" y1="80" x2="360" y2="100" stroke="#888" stroke-width="1.3" marker-end="url(#ah)"/>
+
+  <!-- ======== STEP 1: GSA ======== -->
+  <rect x="60" y="105" width="600" height="220" rx="8" fill="#EAF1FC" stroke="#3E7ABF" stroke-width="1.8" filter="url(#sh)"/>
+  <rect x="60" y="105" width="600" height="30" rx="8" fill="#3E7ABF"/>
+  <rect x="60" y="122" width="600" height="13" fill="#3E7ABF"/>
+  <text x="360" y="125" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">Step 1 — Global Sensitivity Analysis (LH-OAT Morris)</text>
+
+  <!-- GSA flow: 3 compact boxes in a row -->
+  <rect x="80" y="148" width="165" height="48" rx="5" fill="#fff" stroke="#6BA3DE" stroke-width="1"/>
+  <text x="162" y="168" text-anchor="middle" font-size="11" font-weight="600" fill="#2B5C8A">LH-OAT Sampling</text>
+  <text x="162" y="183" text-anchor="middle" font-size="10" fill="#555">Trajectory generation</text>
+
+  <line x1="245" y1="172" x2="275" y2="172" stroke="#6BA3DE" stroke-width="1.2" marker-end="url(#ah)"/>
+
+  <rect x="280" y="148" width="165" height="48" rx="5" fill="#fff" stroke="#6BA3DE" stroke-width="1"/>
+  <text x="362" y="168" text-anchor="middle" font-size="11" font-weight="600" fill="#2B5C8A">SWAT+ Simulation</text>
+  <text x="362" y="183" text-anchor="middle" font-size="10" fill="#555">via SWATrunR</text>
+
+  <line x1="445" y1="172" x2="475" y2="172" stroke="#6BA3DE" stroke-width="1.2" marker-end="url(#ah)"/>
+
+  <rect x="480" y="148" width="165" height="48" rx="5" fill="#fff" stroke="#6BA3DE" stroke-width="1"/>
+  <text x="562" y="168" text-anchor="middle" font-size="11" font-weight="600" fill="#2B5C8A">Performance Metrics</text>
+  <text x="562" y="183" text-anchor="middle" font-size="10" fill="#555">NSE, KGE, PBIAS</text>
+
+  <!-- Arrow down to row 2 -->
+  <line x1="360" y1="196" x2="360" y2="215" stroke="#6BA3DE" stroke-width="1.2" marker-end="url(#ah)"/>
+
+  <!-- GSA row 2: 2 boxes -->
+  <rect x="120" y="220" width="210" height="48" rx="5" fill="#fff" stroke="#6BA3DE" stroke-width="1"/>
+  <text x="225" y="240" text-anchor="middle" font-size="11" font-weight="600" fill="#2B5C8A">Elementary Effects</text>
+  <text x="225" y="255" text-anchor="middle" font-size="10" fill="#555">Morris indices: &#956;* and &#963;</text>
+
+  <line x1="330" y1="244" x2="380" y2="244" stroke="#6BA3DE" stroke-width="1.2" marker-end="url(#ah)"/>
+
+  <rect x="385" y="220" width="230" height="48" rx="5" fill="#fff" stroke="#6BA3DE" stroke-width="1"/>
+  <text x="500" y="240" text-anchor="middle" font-size="11" font-weight="600" fill="#2B5C8A">Parameter Classification</text>
+  <text x="500" y="255" text-anchor="middle" font-size="10" fill="#555">3 Morris groups &#8594; quantile rules</text>
+
+  <!-- GSA output label -->
+  <text x="360" y="305" text-anchor="middle" font-size="10" fill="#3E7ABF" font-style="italic">Outputs: parameter ranking, sensitivity plot, narrowed bounds</text>
+
+  <!-- Arrow GSA -> CAL -->
+  <rect x="285" y="330" width="150" height="22" rx="11" fill="#555"/>
+  <text x="360" y="345" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">Informed bounds</text>
+  <line x1="360" y1="352" x2="360" y2="375" stroke="#888" stroke-width="1.3" marker-end="url(#ah)"/>
+
+  <!-- ======== STEP 2: CALIBRATION ======== -->
+  <rect x="60" y="380" width="600" height="220" rx="8" fill="#E9F7EE" stroke="#2E8B57" stroke-width="1.8" filter="url(#sh)"/>
+  <rect x="60" y="380" width="600" height="30" rx="8" fill="#2E8B57"/>
+  <rect x="60" y="397" width="600" height="13" fill="#2E8B57"/>
+  <text x="360" y="400" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">Step 2 — Calibration (Monte Carlo)</text>
+
+  <!-- CAL flow: 2x2 grid -->
+  <rect x="80" y="423" width="250" height="48" rx="5" fill="#fff" stroke="#5CB88A" stroke-width="1"/>
+  <text x="205" y="443" text-anchor="middle" font-size="11" font-weight="600" fill="#1E6B3F">Random Sampling</text>
+  <text x="205" y="458" text-anchor="middle" font-size="10" fill="#555">n parameter sets (uniform)</text>
+
+  <line x1="330" y1="447" x2="380" y2="447" stroke="#5CB88A" stroke-width="1.2" marker-end="url(#ah)"/>
+
+  <rect x="385" y="423" width="260" height="48" rx="5" fill="#fff" stroke="#5CB88A" stroke-width="1"/>
+  <text x="515" y="443" text-anchor="middle" font-size="11" font-weight="600" fill="#1E6B3F">SWAT+ Simulation + Metrics</text>
+  <text x="515" y="458" text-anchor="middle" font-size="10" fill="#555">NSE, KGE, PBIAS per run</text>
+
+  <!-- Arrow down -->
+  <line x1="360" y1="471" x2="360" y2="490" stroke="#5CB88A" stroke-width="1.2" marker-end="url(#ah)"/>
+
+  <!-- CAL row 2 -->
+  <rect x="80" y="495" width="250" height="48" rx="5" fill="#fff" stroke="#5CB88A" stroke-width="1"/>
+  <text x="205" y="515" text-anchor="middle" font-size="11" font-weight="600" fill="#1E6B3F">Satisfactory Filtering</text>
+  <text x="205" y="530" text-anchor="middle" font-size="10" fill="#555">Behavioural band (P/R-factor)</text>
+
+  <line x1="330" y1="519" x2="380" y2="519" stroke="#5CB88A" stroke-width="1.2" marker-end="url(#ah)"/>
+
+  <rect x="385" y="495" width="260" height="48" rx="5" fill="#fff" stroke="#5CB88A" stroke-width="1"/>
+  <text x="515" y="515" text-anchor="middle" font-size="11" font-weight="600" fill="#1E6B3F">Range Narrowing</text>
+  <text x="515" y="530" text-anchor="middle" font-size="10" fill="#555">Morris quantile rules &#8594; new bounds</text>
+
+  <!-- CAL output label -->
+  <text x="360" y="580" text-anchor="middle" font-size="10" fill="#2E8B57" font-style="italic">Outputs: calibrated parameters, hydrographs, uncertainty band, new_ranges.csv</text>
+
+  <!-- ======== ITERATION LOOP ======== -->
+  <path d="M 650,520 C 695,520 700,440 700,340 C 700,240 695,140 660,140"
+        fill="none" stroke="#D35400" stroke-width="2" stroke-dasharray="7,4"
+        marker-end="url(#ah-or)"/>
+  <text x="712" y="350" text-anchor="middle" font-size="10.5" font-weight="600" fill="#D35400"
+        transform="rotate(-90, 712, 350)">Iteration (narrowed ranges)</text>
+
+  <!-- ======== MORRIS TABLE ======== -->
+  <text x="360" y="640" text-anchor="middle" font-size="13" font-weight="700" fill="#2C3E50">Morris Classification Rules</text>
+
+  <!-- Header -->
+  <rect x="95" y="652" width="530" height="26" rx="5" fill="#2C3E50"/>
+  <rect x="95" y="666" width="530" height="12" fill="#2C3E50"/>
+  <text x="175" y="670" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff">Group</text>
+  <text x="355" y="670" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff">Condition</text>
+  <text x="530" y="670" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff">Quantile Range</text>
+
+  <!-- Row 1 -->
+  <rect x="95" y="678" width="530" height="28" fill="#FADBD8"/>
+  <rect x="95" y="678" width="4" height="28" fill="#E74C3C"/>
+  <text x="175" y="696" text-anchor="middle" font-size="10.5" font-weight="600" fill="#333">High + Interaction</text>
+  <text x="355" y="696" text-anchor="middle" font-size="10.5" fill="#333">&#956;* > mean  AND  &#963; > mean</text>
+  <text x="530" y="696" text-anchor="middle" font-size="11" font-weight="700" fill="#333">Q5 &#8211; Q95</text>
+
+  <!-- Row 2 -->
+  <rect x="95" y="706" width="530" height="28" fill="#FEF9E7"/>
+  <rect x="95" y="706" width="4" height="28" fill="#F1C40F"/>
+  <text x="175" y="724" text-anchor="middle" font-size="10.5" font-weight="600" fill="#333">High Importance</text>
+  <text x="355" y="724" text-anchor="middle" font-size="10.5" fill="#333">&#956;* > mean  AND  &#963; &#8804; mean</text>
+  <text x="530" y="724" text-anchor="middle" font-size="11" font-weight="700" fill="#333">Q10 &#8211; Q90</text>
+
+  <!-- Row 3 -->
+  <rect x="95" y="734" width="530" height="28" fill="#D5F5E3"/>
+  <rect x="95" y="734" width="4" height="28" fill="#27AE60"/>
+  <text x="175" y="752" text-anchor="middle" font-size="10.5" font-weight="600" fill="#333">Low Importance</text>
+  <text x="355" y="752" text-anchor="middle" font-size="10.5" fill="#333">&#956;* &#8804; mean</text>
+  <text x="530" y="752" text-anchor="middle" font-size="11" font-weight="700" fill="#333">Q25 &#8211; Q75</text>
+
+  <rect x="95" y="762" width="530" height="1" fill="#B0B0C0"/>
+
+  <!-- Footer -->
+  <text x="360" y="795" text-anchor="middle" font-size="9.5" fill="#AAAABB">Orchestrated by main.R &#8226; Built with SWATrunR &#8226; Auto-versioned outputs</text>
+
+</svg>
