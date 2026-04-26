@@ -1,5 +1,8 @@
 # SWAT+ Calibrator
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19793644.svg)](https://doi.org/10.5281/zenodo.19793644)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Single-phase sensitivity analysis, calibration and split-sample validation workflow for SWAT+ models using [SWATrunR](https://chrisschuerz.github.io/SWATrunR/).
 
 **Workflow:** GSA (LH-OAT Morris screening) &rarr; Calibration (Monte Carlo sampling) &rarr; narrowed parameter ranges &rarr; optional re-iteration &rarr; optional split-sample validation on an independent period.

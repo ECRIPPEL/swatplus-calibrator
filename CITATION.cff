@@ -18,6 +18,10 @@ version: "1.0.0"
 date-released: "2026-04-26"
 license: MIT
 repository-code: "https://github.com/ECRIPPEL/swatplus-calibrator"
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.19793644
+    description: "Concept DOI (always points to the latest version)"
 keywords:
   - SWAT+
   - calibration
