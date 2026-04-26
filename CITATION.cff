@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below."
+title: "swatplus-calibrator: Single-phase SWAT+ sensitivity analysis, calibration and split-sample validation"
+abstract: >-
+  An R-based single-phase calibration workflow for SWAT+ models using
+  SWATrunR. Implements LH-OAT Morris sensitivity screening, Monte Carlo
+  Latin Hypercube calibration with Moriasi-style satisfactory thresholds,
+  optional iterative range narrowing through Morris-class quantile rules,
+  and split-sample validation for behavioural ensembles on independent
+  periods.
+type: software
+authors:
+  - family-names: "Rippel"
+    given-names: "Elzon Cassio"
+    orcid: "https://orcid.org/0000-0002-8391-4435"
+    affiliation: "Universidade Federal de Santa Maria (UFSM)"
+version: "1.0.0"
+date-released: "2026-04-26"
+license: MIT
+repository-code: "https://github.com/ECRIPPEL/swatplus-calibrator"
+keywords:
+  - SWAT+
+  - calibration
+  - sensitivity analysis
+  - Morris method
+  - LH-OAT
+  - split-sample validation
+  - hydrology
+  - SWATrunR

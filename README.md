@@ -1,8 +1,8 @@
 # SWAT+ Calibrator
 
-Single-phase sensitivity analysis and calibration workflow for SWAT+ models using [SWATrunR](https://chrisschuerz.github.io/SWATrunR/).
+Single-phase sensitivity analysis, calibration and split-sample validation workflow for SWAT+ models using [SWATrunR](https://chrisschuerz.github.io/SWATrunR/).
 
-**Workflow:** GSA (LH-OAT Morris screening) &rarr; Calibration (Monte Carlo sampling) &rarr; narrowed parameter ranges &rarr; optional re-iteration.
+**Workflow:** GSA (LH-OAT Morris screening) &rarr; Calibration (Monte Carlo sampling) &rarr; narrowed parameter ranges &rarr; optional re-iteration &rarr; optional split-sample validation on an independent period.
 
 ## Workflow
 
@@ -39,12 +39,28 @@ Install all at once:
 ```r
 install.packages(c(
   "yaml", "dplyr", "tibble", "tidyr", "purrr", "lhs",
-  "hydroGOF", "lubridate", "ggplot2", "ggrepel"
+  "hydroGOF", "lubridate", "ggplot2", "ggrepel", "remotes"
 ))
 
+# ⚠️ SWATrunR 0.9.4 uses readr::read_table2() which was removed in readr 2.2.0.
+# Pin readr to 2.1.2 BEFORE installing SWATrunR, otherwise install fails with
+# "objeto 'read_table2' não foi exportado por 'namespace:readr'".
+# (readr 1.4.0 also works but fails to compile on GCC 12 / RTools 43.)
+remotes::install_version("readr", version = "2.1.2", upgrade = "never")
+
 # SWATrunR (from GitHub)
-remotes::install_github("chrisschuerz/SWATrunR")
+remotes::install_github("chrisschuerz/SWATrunR", upgrade = "never")
 ```
+
+> **Do not update `readr` afterwards.** SWATrunR bakes in a reference to
+> `readr::read_table2()`, which was removed in readr 2.0.0. Upgrading readr
+> will break SWATrunR at runtime. If you need to run `update.packages()`,
+> exclude readr:
+>
+> ```r
+> update.packages(ask = FALSE,
+>                 oldPkgs = setdiff(installed.packages()[, "Package"], "readr"))
+> ```
 
 ---
 
@@ -53,9 +69,10 @@ remotes::install_github("chrisschuerz/SWATrunR")
 ```
 swatplus-calibrator/
 ├── config.yaml          # Single configuration file (edit this)
-├── main.R               # Orchestrator: runs GSA then calibration
+├── main.R               # Orchestrator: GSA → Calibration → (optional) Validation
 ├── run_gsa.R            # Step 1: LH-OAT Morris sensitivity analysis
 ├── run_cal.R            # Step 2: Monte Carlo calibration
+├── run_val.R            # Step 3 (optional): Split-sample validation
 └── R/
     ├── lhoat_engine.R   # LH-OAT trajectory generation + Elementary Effects
     ├── metrics.R        # NSE, KGE, PBIAS + behavioural band (P/R-factor)
@@ -142,6 +159,7 @@ You can also run steps individually:
 CONFIG_PATH <- "config.yaml"
 source("run_gsa.R")   # Step 1 only
 source("run_cal.R")   # Step 2 only (requires GSA_v* to exist)
+source("run_val.R")   # Step 3 only (requires a calibrated parameter-set CSV)
 ```
 
 ---
@@ -232,6 +250,82 @@ Iteration 3:  config.yaml (ranges from v2)   → GSA_v3/ → CAL_v3/new_ranges.c
 ```
 
 Parameters **not found** in `new_ranges.csv` keep their original YAML bounds. This lets you add new parameters between iterations.
+
+---
+
+## Split-sample validation (`run_val.R`)
+
+After the calibration converges, the calibrated ensemble can be propagated through SWAT+ over an **independent period** that was not used in calibration (classical split-sample test; Klemes, 1986). The validation step does **not** narrow parameter ranges &mdash; it quantifies how the behavioural ensemble performs outside the calibration window.
+
+### What it does
+
+1. Reads a CSV with **one row per calibrated parameter set** (typically `CAL_vX/satisfactory_results.csv` or a robust/behavioural subset produced by downstream analysis).
+2. Auto-detects parameter columns by the SWATrunR notation (`cn2::cn2.hru | change = pctchg`, etc.) &mdash; no manual column mapping needed.
+3. Runs SWAT+ for the validation period using **exactly those parameter combinations** (no resampling).
+4. Computes NSE/KGE/PBIAS on the validation window and flags runs that still meet the satisfactory thresholds (temporal-stability diagnostic).
+5. Builds the behavioural band over the **full ensemble** (calibration-uncertainty propagation, GLUE/SUFI-2 convention) and, as a secondary diagnostic, over the subset of runs still satisfactory in validation.
+6. Runs the water balance diagnostic (ET/P, WYLD/P) on the validation window when targets are defined.
+
+### Configuration
+
+Add a `validation:` block to `config.yaml`:
+
+```yaml
+validation:
+  enabled:        true
+  param_sets_csv: "C:/.../CAL_v1/satisfactory_results.csv"   # or a robust subset
+  simulation:
+    start_date:   "1986-01-01"      # earlier start allows proper warm-up
+    end_date:     "1999-12-31"
+    warmup_years: 4
+  observed:
+    start_date:   "1990-01-01"      # first date used for validation metrics
+  # thresholds: {threshold_nse: 0.50, threshold_kge: 0.50, threshold_abs_pbias: 15.0}
+  # targets:    {et_rto: 0.48147, wyld_rto: 0.51853}
+  # outputs:    (same schema as cal_outputs)
+```
+
+All optional keys fall back to the top-level `simulation`, `observed`, `cal_outputs`, `calibration.threshold_*` and `calibration.targets` when omitted.
+
+### Run
+
+```r
+source("main.R")    # Step 3 runs automatically when validation.enabled = true
+```
+
+Or stand-alone:
+
+```r
+CONFIG_PATH <- "config.yaml"
+source("run_val.R")
+```
+
+```bash
+Rscript run_val.R config.yaml
+```
+
+### Output folder: `VAL_v1/`
+
+| File                                  | Description                                                                 |
+|---------------------------------------|-----------------------------------------------------------------------------|
+| `results_val.csv`                     | All valid runs: NSE/KGE/PBIAS + `still_satisfactory` flag + parameter values |
+| `run_map.csv`                         | Mapping between SWATrunR run ids and the original calibration run ids       |
+| `behavioural_band_full.csv`           | Min&ndash;max envelope from the full ensemble (per timestep)                |
+| `behavioural_band_factors_full.csv`   | P-factor and R-factor of the full-ensemble band                             |
+| `behavioural_band_stable.csv`         | Band restricted to runs still satisfactory in validation                    |
+| `behavioural_band_factors_stable.csv` | P-factor and R-factor of the stable subset                                  |
+| `balance_diagnostic_val.csv`          | ET/P and WYLD/P per run on the validation window                            |
+| `fdc_band_val.csv`                    | FDC envelope (exceedance, observed, lower, upper)                           |
+| `hydrograph_val.tif`                  | Validation hydrograph with band + still-satisfactory highlights             |
+| `uncertainty_envelope_val.tif`        | SWAT-CUP&ndash;style band + observed for the validation window              |
+| `fdc_envelope_val.tif`                | FDC with the full-ensemble band                                             |
+| `scatter_performance_val.tif`         | NSE vs KGE scatter on the validation window                                 |
+| `resultado_val.rds`                   | Full R object with all results, bands and the source CSV path               |
+
+### Two uncertainty bands, two questions
+
+- **Full-ensemble band** answers: *how much of the observed hydrograph does the calibrated uncertainty actually bracket out-of-sample?* This is the primary diagnostic for reporting.
+- **Stable-subset band** answers: *of the calibrated runs, how many remain satisfactory on the validation period?* The ratio `n_stable / n_valid` is the temporal-stability rate &mdash; a direct test for non-stationarity in the calibrated behavioural region.
 
 ---
 
@@ -426,6 +520,24 @@ Parameters use SWATrunR notation: `variable::file | change = type`
 
 ---
 
+## Citation
+
+If you use this software, please cite it via the metadata in [`CITATION.cff`](CITATION.cff). After a tagged release, a versioned DOI is automatically minted by Zenodo and shown as a badge at the top of this README.
+
+GitHub natively renders `CITATION.cff` as a "Cite this repository" button on the repository landing page (top right), with ready-to-paste BibTeX/APA strings.
+
+---
+
+## Contact
+
+For technical questions, bug reports, or feature requests, please open an issue on GitHub: <https://github.com/ECRIPPEL/swatplus-calibrator/issues>.
+
+Author: Elzon Cassio Rippel — ORCID [0000-0002-8391-4435](https://orcid.org/0000-0002-8391-4435).
+
+---
+
 ## License
 
-This tool is provided for research and educational use. See the SWAT+ and SWATrunR licenses for their respective terms.
+Released under the MIT License — see [`LICENSE`](LICENSE) for the full text.
+
+This tool depends on [SWAT+](https://swat.tamu.edu/software/plus/) and [SWATrunR](https://chrisschuerz.github.io/SWATrunR/), which are distributed under their own licenses.

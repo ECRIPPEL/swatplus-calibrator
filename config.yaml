@@ -81,6 +81,57 @@ iteration:
   ranges_file: null
 
 # ------------------------------------------------------------------------------
+# Validation (split-sample test on an independent period)
+#
+# Propagates a calibrated ensemble (satisfactory or robust runs from a
+# previous CAL_v*/ folder) through SWAT+ over a period not used in calibration.
+# Computes NSE/KGE/PBIAS, behavioural band (P-/R-factor) and the water balance
+# diagnostic on the validation window — does NOT narrow parameter ranges.
+#
+# param_sets_csv : CSV with one row per parameter set; parameter columns are
+#                  auto-detected (must contain "::" in the header, e.g.
+#                  "cn2::cn2.hru | change = pctchg").
+#                  Typical sources:
+#                    - CAL_vX/satisfactory_results.csv  (benchmark)
+#                    - .../runs_robustas_com_clusters.csv (HMS robust subset)
+#
+# simulation/observed blocks follow the same schema as the top-level ones but
+# override them for the validation run. Dates should cover a period that does
+# NOT overlap with the calibration window.
+#
+# thresholds (optional) : NSE/KGE/|PBIAS| cut-offs used to flag runs that are
+#                         "still satisfactory" in the validation window
+#                         (temporal-stability diagnostic). Defaults to
+#                         calibration.threshold_* if omitted.
+#
+# outputs (optional) : override cal_outputs; useful if the validation uses a
+#                      different output file (e.g. channel_sdmorph_day).
+#                      If omitted, cal_outputs is reused as-is.
+#
+# targets (optional) : override calibration.targets (ET/P, WYLD/P) when the
+#                      long-term ratios for the validation period differ from
+#                      the calibration period. Defaults to calibration.targets.
+# ------------------------------------------------------------------------------
+validation:
+  enabled:        true
+  param_sets_csv: "C:/path/to/your/CAL_v1/satisfactory_results.csv"
+  simulation:
+    start_date:   "1986-01-01"
+    end_date:     "1999-12-31"
+    warmup_years: 4
+  observed:
+    start_date:   "1990-01-01"
+    # daily_file / monthly_file default to the top-level observed.* if omitted
+  thresholds:
+    threshold_nse:       0.50
+    threshold_kge:       0.50
+    threshold_abs_pbias: 15.0
+  targets:
+    et_rto:   0.48147
+    wyld_rto: 0.51853
+  # outputs: (omitted — reuses cal_outputs from top-level)
+
+# ------------------------------------------------------------------------------
 # SWAT+ outputs for GSA
 # The first key name (e.g., "streamflow") becomes sim$simulation$streamflow
 # and is used to build the observed-vs-simulated comparison.
